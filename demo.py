@@ -32,6 +32,8 @@ def main(args):
 
     types = ('*.jpg', '*.png')
     image_path_list= []
+    if os.path.isfile(image_folder):
+        image_path_list.append(image_folder)
     for files in types:
         image_path_list.extend(glob(os.path.join(image_folder, files)))
     total_num = len(image_path_list)
@@ -50,14 +52,15 @@ def main(args):
             if max_size> 1000:
                 image = rescale(image, 1000./max_size)
                 image = (image*255).astype(np.uint8)
-            pos = prn.process(image) # use dlib to detect face
+            pos, crop_image = prn.process(image) # use dlib to detect face
         else:
             if image.shape[1] == image.shape[2]:
                 image = resize(image, (256,256))
                 pos = prn.net_forward(image/255.) # input image has been cropped to 256x256
+                crop_image = None
             else:
                 box = np.array([0, image.shape[1]-1, 0, image.shape[0]-1]) # cropped with bounding box
-                pos = prn.process(image, box)
+                pos, crop_image = prn.process(image, box)
         
         image = image/255.
         if pos is None:
@@ -72,8 +75,9 @@ def main(args):
                 save_vertices = vertices.copy()
             save_vertices[:,1] = h - 1 - save_vertices[:,1]
 
-        if args.isImage:
-            imsave(os.path.join(save_folder, name + '.jpg'), image)
+        if args.isImage and crop_image is not None:
+            imsave(os.path.join(save_folder, name + '_crop.jpg'), crop_image)
+            imsave(os.path.join(save_folder, name + '_orig.jpg'), image)
 
         if args.is3d:
             # corresponding colors
@@ -117,6 +121,8 @@ def main(args):
             cv2.imshow('sparse alignment', plot_kpt(image, kpt))
             cv2.imshow('dense alignment', plot_vertices(image, vertices))
             cv2.imshow('pose', plot_pose_box(image, camera_matrix, kpt))
+            if crop_image is not None:
+                cv2.imshow('crop', crop_image)
             cv2.waitKey(0)
 
 
@@ -141,7 +147,7 @@ if __name__ == '__main__':
                         help='whether to output estimated pose(.txt)')
     parser.add_argument('--isShow', default=False, type=ast.literal_eval,
                         help='whether to show the results with opencv(need opencv)')
-    parser.add_argument('--isImage', default=False, type=ast.literal_eval,
+    parser.add_argument('--isImage', default=True, type=ast.literal_eval,
                         help='whether to save input image')
     # update in 2017/4/10
     parser.add_argument('--isFront', default=False, type=ast.literal_eval,

@@ -21,7 +21,7 @@ def texture_editing(prn, args):
     [h, w, _] = image.shape
 
     #-- 1. 3d reconstruction -> get texture. 
-    pos = prn.process(image) 
+    pos, _ = prn.process(image)
     vertices = prn.get_vertices(pos)
     image = image/255.
     texture = cv2.remap(image, pos[:,:,:2].astype(np.float32), None, interpolation=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT,borderValue=(0))
@@ -37,7 +37,7 @@ def texture_editing(prn, args):
 
         # texture from another image or a processed texture
         ref_image = imread(args.ref_path)
-        ref_pos = prn.process(ref_image)
+        ref_pos, _ = prn.process(ref_image)
         ref_image = ref_image/255.
         ref_texture = cv2.remap(ref_image, ref_pos[:,:,:2].astype(np.float32), None, interpolation=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT,borderValue=(0))
 
@@ -48,7 +48,7 @@ def texture_editing(prn, args):
     elif Mode == 1: 
         # texture from another image or a processed texture
         ref_image = imread(args.ref_path)
-        ref_pos = prn.process(ref_image)
+        ref_pos, _ = prn.process(ref_image)
         ref_image = ref_image/255.
         ref_texture = cv2.remap(ref_image, ref_pos[:,:,:2].astype(np.float32), None, interpolation=cv2.INTER_NEAREST, borderMode=cv2.BORDER_CONSTANT,borderValue=(0))
         ref_vertices = prn.get_vertices(ref_pos)

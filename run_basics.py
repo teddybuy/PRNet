@@ -34,9 +34,9 @@ for i, image_path in enumerate(image_path_list):
         mat_path = image_path.replace('jpg', 'mat')
         info = sio.loadmat(mat_path)
         kpt = info['pt3d_68']
-        pos = prn.process(image, kpt) # kpt information is only used for detecting face and cropping image
+        pos, _ = prn.process(image, kpt) # kpt information is only used for detecting face and cropping image
     else:
-        pos = prn.process(image) # use dlib to detect face
+        pos, _ = prn.process(image) # use dlib to detect face
 
     # -- Basic Applications
     # get landmarks

@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 import os
 from skimage.io import imread, imsave
@@ -103,11 +104,14 @@ class PRN:
 
             d = detected_faces[0].rect ## only use the first detected face (assume that each input image only contains one face)
             left = d.left(); right = d.right(); top = d.top(); bottom = d.bottom()
+            #cv2.imshow('crop', image[top:bottom, left:right])
             old_size = (right - left + bottom - top)/2
             center = np.array([right - (right - left) / 2.0, bottom - (bottom - top) / 2.0 + old_size*0.14])
             size = int(old_size*1.58)
 
         # crop image
+        #cv2.imshow('crop2', image[int(center[1]-size/2):int(center[1]+size/2), int(center[0]-size/2):int(center[0]+size/2)])
+        #cv2.waitKey(0)
         src_pts = np.array([[center[0]-size/2, center[1]-size/2], [center[0] - size/2, center[1]+size/2], [center[0]+size/2, center[1]-size/2]])
         DST_PTS = np.array([[0,0], [0,self.resolution_inp - 1], [self.resolution_inp - 1, 0]])
         tform = estimate_transform('similarity', src_pts, DST_PTS)
@@ -128,7 +132,7 @@ class PRN:
         vertices = np.vstack((vertices[:2,:], z))
         pos = np.reshape(vertices.T, [self.resolution_op, self.resolution_op, 3])
         
-        return pos
+        return pos, cropped_image
             
     def get_landmarks(self, pos):
         '''
